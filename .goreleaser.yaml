@@ -1,0 +1,63 @@
+version: 2
+before:
+  hooks:
+  - go mod tidy
+  - go generate ./...
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - windows
+  - darwin
+  main: main.go
+  goarch:
+  - amd64
+  binary: bluefear
+  id: bluefear
+  ldflags:
+  - -s -w
+    -X "github.com/gkwa/bluefear/version.Version={{ .Version }}"
+    -X "github.com/gkwa/bluefear/version.Date={{ .CommitDate }}"
+    -X "github.com/gkwa/bluefear/version.GoVersion={{ .Env.GOVERSION }}"
+    -X "github.com/gkwa/bluefear/version.ShortGitSHA={{ .ShortCommit }}"
+    -X "github.com/gkwa/bluefear/version.FullGitSHA={{ .FullCommit }}"
+archives:
+- format: tar.gz
+  name_template: |-
+    bluefear_ {{- title .Os }}_ {{- if eq .Arch "amd64" }}x86_64
+                               {{- else if eq .Arch "386" }}i386
+                               {{- else }}
+                               {{ .Arch }}
+                               {{ end }}
+                               {{- if .Arm }}v{{ .Arm }}{{ end }}
+  format_overrides:
+  - goos: windows
+    format: zip
+checksum:
+  name_template: checksums.txt
+snapshot:
+  name_template: '{{ incpatch .Version }}-next'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+brews:
+- name: bluefear
+  directory: Formula
+  homepage: https://github.com/gkwa/bluefear
+  repository:
+    owner: gkwa
+    name: homebrew-tools
+    branch: main
+scoops:
+- name: bluefear
+  homepage: https://github.com/gkwa/bluefear
+  description: "Description of the bluefear project"
+  license: MIT
+  repository:
+    owner: gkwa
+    name: scoop-bucket
+    branch: master
